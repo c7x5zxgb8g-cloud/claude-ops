@@ -1,0 +1,4 @@
+# 运维助手运行时产物
+ops-state/run-logs/
+ops-state/.lock
+*.log
