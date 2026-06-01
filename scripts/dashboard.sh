@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 # 报告汇总仪表盘（左上窗格）：状态计数 + 历次诊断报告滚动汇总 + 最新报告预览。
 # 纯脚本、零 token、只读磁盘——数据来自 triage 落盘的 issues.json 与 reports/。
-# 用法：./dashboard.sh [刷新秒数]      例：./dashboard.sh 60
+# 用法：./scripts/dashboard.sh [刷新秒数]      例：./scripts/dashboard.sh 60
 set -uo pipefail
-cd "$(dirname "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$REPO"
 INTERVAL="${1:-60}"
 
 while true; do

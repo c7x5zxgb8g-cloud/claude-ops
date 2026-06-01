@@ -2,12 +2,14 @@
 # 上帝视角心跳：每隔 INTERVAL 秒刷新一次系统运行状态快照。
 # 纯脚本、零 token、不碰 Claude 上下文——读的是 triage 已经算好并落盘的状态。
 # 建议放在一个独立的 tmux 窗格里常驻；另一个窗格留给交互式 claude。
-# 用法：./heartbeat.sh [间隔秒数]        例：./heartbeat.sh 120
+# 用法：./scripts/heartbeat.sh [间隔秒数]        例：./scripts/heartbeat.sh 120
 # 可选：export LOG_GLOB='logs/**/*.log'  设了就顺带统计近期 error/exception 行数
 # 依赖：python3（状态汇总）；可选 bash globstar（日志统计）
 set -uo pipefail
 shopt -s globstar nullglob 2>/dev/null || true
-cd "$(dirname "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$REPO"
 
 INTERVAL="${1:-120}"
 REPORTS="ops-state/reports"

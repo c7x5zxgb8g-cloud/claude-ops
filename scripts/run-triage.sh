@@ -1,22 +1,20 @@
 #!/usr/bin/env bash
-# 定时运维循环：以 headless 模式跑一轮 triage。
-# 由 cron / systemd timer 周期性调用。放在仓库根目录（与 CLAUDE.md 同级）。
+# 可选支线：以 headless 模式跑一轮 triage。
+#
+# 默认推荐路径是先运行 ./scripts/start-ops.sh，在交互式 Claude Code pane 中执行 /triage。
+# 只有当你明确需要 cron / systemd 这类无人值守运行时，才使用本脚本。
 set -euo pipefail
 
-# 仓库根目录 = 本脚本所在目录
-REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$REPO"
 
-# --- cron 环境很干净，下面几件事必须显式处理，否则线上必踩 ---
+# --- 非交互环境很干净，下面几件事必须显式处理，否则无人值守时容易踩坑 ---
 # 1) PATH 里通常没有 claude，补上常见安装位置
 export PATH="$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
-# 2) 订阅制鉴权：用订阅登录，不要用 API key（设了 API key 会强制走 API 按量计费）。
-#    cron 无法浏览器登录，所以先在你自己终端跑一次：claude setup-token
-#    它生成一个长期 OAuth token；把它放进下面（更稳妥是放进只有你能读的 env 文件再 source）。
-export CLAUDE_CODE_OAUTH_TOKEN="${CLAUDE_CODE_OAUTH_TOKEN:?请先用 claude setup-token 生成订阅 OAuth token 并在此设置}"
-# 3) 防止环境里残留的 ANTHROPIC_API_KEY 抢占（一旦存在，-p 必定优先用它并走 API 计费）
-unset ANTHROPIC_API_KEY || true
-# 4) 工作目录已在上面 cd 好。配完可用交互会话里的 /status 确认当前走的是订阅。
+# 2) 鉴权不在这里替你选择：先确保当前环境里的 `claude -p` 能正常运行。
+#    你可以使用 Claude Code 已有登录态，也可以按自己的部署方式配置环境变量。
+# 3) 工作目录已在上面 cd 好。
 
 LOG_DIR="ops-state/run-logs"
 mkdir -p "$LOG_DIR"

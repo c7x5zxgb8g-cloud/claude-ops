@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # 日志流窗格（右列）：实时 tail 多 agent 的日志文件。
-# 用法：LOG_GLOB='logs/**/*.log' ./logs-tail.sh   或   ./logs-tail.sh 'logs/**/*.log'
+# 用法：LOG_GLOB='logs/**/*.log' ./scripts/logs-tail.sh   或   ./scripts/logs-tail.sh 'logs/**/*.log'
 # 日志实际路径见 ops-state/project-facts.md（/onboard 写的清单）。
 set -uo pipefail
 shopt -s globstar nullglob 2>/dev/null || true
-cd "$(dirname "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$REPO"
 
 LOG_GLOB="${LOG_GLOB:-${1:-logs/**/*.log}}"
 files=( $LOG_GLOB )

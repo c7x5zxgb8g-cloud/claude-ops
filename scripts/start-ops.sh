@@ -9,11 +9,12 @@
 #   |  (左下)           |                    |
 #   +------------------+--------------------+
 #
-# 用法：./start-ops.sh
+# 用法：./scripts/start-ops.sh
 # 可选：export LOG_GLOB='logs/**/*.log'   指定右列要 tail 的日志
 set -euo pipefail
-cd "$(dirname "${BASH_SOURCE[0]}")"
-REPO="$PWD"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$REPO"
 SESSION="${SESSION:-ops}"
 LOG_GLOB="${LOG_GLOB:-logs/**/*.log}"
 
@@ -32,9 +33,14 @@ logs="$(tmux split-window -h -l 60% -t "$dash" -c "$REPO" -P -F '#{pane_id}')"
 # 把左列再纵向切，下半 = 交互式 claude（占左列 55% 高）
 chat="$(tmux split-window -v -l 55% -t "$dash" -c "$REPO" -P -F '#{pane_id}')"
 
+# 给 pane 打上稳定标题，便于 scripts/ops-watch.sh 精确注入 /triage。
+tmux select-pane -t "$dash" -T dashboard
+tmux select-pane -t "$logs" -T logs
+tmux select-pane -t "$chat" -T claude
+
 # 启动各窗格
-tmux send-keys -t "$dash" './dashboard.sh 60' Enter
-tmux send-keys -t "$logs" "LOG_GLOB='$LOG_GLOB' ./logs-tail.sh" Enter
+tmux send-keys -t "$dash" './scripts/dashboard.sh 60' Enter
+tmux send-keys -t "$logs" "LOG_GLOB='$LOG_GLOB' ./scripts/logs-tail.sh" Enter
 tmux send-keys -t "$chat" 'claude' Enter
 
 # 焦点落在对话窗格
